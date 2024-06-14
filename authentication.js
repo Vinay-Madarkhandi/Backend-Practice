@@ -26,16 +26,15 @@ const ALL_USERS = [
 
 function userExists(username, password) {
   let userExists = false;
-  for (let i = 0; i <= ALL_USERS.length; i++) {
+  for (let i = 0; i < ALL_USERS.length; i++) {
     if (
-      ALL_USERS[i].username === username &&
-      ALL_USERS[i].password === password
+      ALL_USERS[i].username == username &&
+      ALL_USERS[i].password == password
     ) {
-      return (userExists = true);
-    } else {
-      return (userExists = false);
+      userExists = true;
     }
   }
+  return userExists;
 }
 
 app.post("/signin", function (req, res) {
