@@ -1,12 +1,17 @@
+require("dotenv").config();
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
 const jwtPassword = process.env.JWT_SECRET;
 const PORT = process.env.PORT;
+
 async function main() {
   try {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("mongoDB connected successfully!");
   } catch (err) {
     console.log("could not connect DB " + err);
@@ -28,32 +33,33 @@ app.post("/signup", async function (req, res) {
   const { name, username, password } = req.body;
 
   if (!name || !username || !password) {
-    res.status(401).json({
+    res.status(500).json({
       msg: "Please fill all the required values",
     });
-  }
-  try {
-    const existUsername = await UserProfile.findOne({ username: username });
-    if (existUsername) {
-      res.status(201).json({
-        msg: "Username already exist! Please try something different!",
-      });
-    } else {
-      const users = new UserProfile({
-        name,
-        username,
-        password,
-      });
+  } else {
+    try {
+      const existUsername = await UserProfile.findOne({ username: username });
+      if (existUsername) {
+        res.status(201).json({
+          msg: "Username already exist! Please try something different!",
+        });
+      } else {
+        const users = new UserProfile({
+          name,
+          username,
+          password,
+        });
 
-      await users.save();
-      res.status(200).json({
-        msg: "SignUp successfull!",
+        await users.save();
+        res.status(200).json({
+          msg: "SignUp successfull!",
+        });
+      }
+    } catch (err) {
+      res.status(404).json({
+        msg: "Something happened while signin please try later/try again!",
       });
     }
-  } catch (err) {
-    res.status(404).json({
-      msg: "Something happened while signin please try later/try again!",
-    });
   }
 });
 
@@ -74,27 +80,28 @@ app.post("/signin", async function (req, res) {
     res.status(400).json({
       msg: "Please Fill all the Deatails!",
     });
-  }
-  try {
-    const exists = await userExists(username, password);
-    if (!exists) {
-      res.status(400).json({
-        msg: "Username or Password dosent Exists!",
-      });
-    } else {
-      const token = jwt.sign({ username, username }, jwtPassword, {
-        expiresIn: "7h",
-      });
+  } else {
+    try {
+      const exists = await userExists(username, password);
+      if (!exists) {
+        res.status(400).json({
+          msg: "Username or Password dosent Exists!",
+        });
+      } else {
+        const token = jwt.sign({ username, username }, jwtPassword, {
+          expiresIn: "7h",
+        });
 
-      res.json({
-        token,
-        msg: "You have signIn successfully!",
+        res.json({
+          token,
+          msg: "You have signIn successfully!",
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        msg: "Something wrong happened while sign in ! Please try later!",
       });
     }
-  } catch (err) {
-    res.status(500).json({
-      msg: "Something wrong happened while sign in ! Please try later!",
-    });
   }
 });
 
@@ -105,23 +112,31 @@ app.get("/users", (req, res) => {
     return res.status(401).json({
       msg: "Authorization header missing or malformed",
     });
-  }
+  } else {
+    const token = authHeader.split(" ")[1];
 
-  const token = authHeader.split(" ")[1];
-
-  try {
-    const decoded = jwt.verify(token, jwtPassword);
-    const username = decoded.username;
-    res.json({
-      username,
-      msg: "Welcome to our website!",
-    });
-  } catch (err) {
-    console.error("Invalid token:", err);
-    res.status(401).json({
-      msg: "Invalid token",
-    });
+    try {
+      const decoded = jwt.verify(token, jwtPassword);
+      const username = decoded.username;
+      res.json({
+        username,
+        msg: "Welcome to our website!",
+      });
+    } catch (err) {
+      console.error("Invalid token:", err);
+      res.status(401).json({
+        msg: "Invalid token",
+      });
+    }
   }
 });
 
-app.listen(PORT);
+app.use((err, req, res, next) => {
+  res.status(500).json({
+    msg: "something wrong with the server!",
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Your server is running at server ${PORT}`);
+});
