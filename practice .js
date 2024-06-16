@@ -85,5 +85,3 @@ function isThereAtleastOneUnhealthyKidney() {
 
 app.listen(3000);
 
-//mongodb+srv://vinaym:Maderchod123$@cluster0.bxsfayt.mongodb.net/
-//postgresql://test_owner:t0ZsuWE2jIDo@ep-silent-river-a5cz3gp3.us-east-2.aws.neon.tech/test?sslmode=require
