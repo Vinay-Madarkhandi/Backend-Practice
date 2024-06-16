@@ -2,14 +2,15 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const jwtPassword = "123456";
+const jwtPassword = process.env.JWT_SECRET;
+const PORT = process.env.PORT_1;
 
 async function main() {
   try {
-    await mongoose.connect(
-      "mongodb+srv://vinaym:Maderchod123$@cluster0.bxsfayt.mongodb.net/userData",
-      { useNewUrlParser: true, useUnifiedTopology: true }
-    );
+    await mongoose.connect(process.env.MONGO_URI_1, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("Connected to MongoDB");
   } catch (error) {
     console.error("Could not connect to MongoDB:", error);
@@ -99,7 +100,6 @@ app.post("/signin", async function (req, res) {
   });
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

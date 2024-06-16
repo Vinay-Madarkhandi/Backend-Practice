@@ -2,13 +2,11 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
-const jwtPassword = "123456";
-
+const jwtPassword = process.env.JWT_SECRET;
+const PORT = process.env.PORT;
 async function main() {
   try {
-    await mongoose.connect(
-      "mongodb+srv://vinaym:Maderchod123$@cluster0.bxsfayt.mongodb.net/practice"
-    );
+    await mongoose.connect(process.env.MONGO_URL);
     console.log("mongoDB connected successfully!");
   } catch (err) {
     console.log("could not connect DB " + err);
@@ -126,4 +124,4 @@ app.get("/users", (req, res) => {
   }
 });
 
-app.listen(3001);
+app.listen(PORT);
